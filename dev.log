@@ -1,0 +1,11 @@
+
+> syllabusiq@0.1.0 dev
+> next dev
+
+⚠ Port 3000 is in use by process 4752, using available port 3003 instead.
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3003
+- Network:       http://192.168.1.252:3003
+- Environments: .env.local
+✓ Ready in 397ms
+

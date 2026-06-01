@@ -1,0 +1,387 @@
+{
+  "name": "CPALE (Certified Public Accountant Licensure Exam)",
+  "slug": "cpale",
+  "subjects": [
+    {
+      "id": "FAR",
+      "code": "FAR",
+      "label": "Financial Accounting and Reporting",
+      "weight": 1,
+      "domains": [
+        {
+          "id": "FAR.conceptual",
+          "label": "Conceptual Framework & Accounting Standards",
+          "topics": [
+            { "id": "FAR.conceptual.framework", "label": "Conceptual Framework for Financial Reporting" },
+            { "id": "FAR.conceptual.pfrs_overview", "label": "Overview of PFRS and PAS" },
+            { "id": "FAR.conceptual.fair_value", "label": "Fair Value Measurement (PFRS 13)" }
+          ]
+        },
+        {
+          "id": "FAR.assets",
+          "label": "Assets",
+          "topics": [
+            { "id": "FAR.assets.cash", "label": "Cash and Cash Equivalents" },
+            { "id": "FAR.assets.receivables", "label": "Receivables and Impairment" },
+            { "id": "FAR.assets.inventories", "label": "Inventories (PAS 2)" },
+            { "id": "FAR.assets.ppe", "label": "Property, Plant & Equipment (PAS 16)" },
+            { "id": "FAR.assets.investment_property", "label": "Investment Property (PAS 40)" },
+            { "id": "FAR.assets.intangibles", "label": "Intangible Assets (PAS 38)" },
+            { "id": "FAR.assets.biological", "label": "Agriculture & Biological Assets (PAS 41)" },
+            { "id": "FAR.assets.impairment", "label": "Impairment of Assets (PAS 36)" }
+          ]
+        },
+        {
+          "id": "FAR.liabilities",
+          "label": "Liabilities",
+          "topics": [
+            { "id": "FAR.liabilities.current", "label": "Current Liabilities & Provisions (PAS 37)" },
+            { "id": "FAR.liabilities.employee_benefits", "label": "Employee Benefits (PAS 19)" },
+            { "id": "FAR.liabilities.income_tax", "label": "Income Taxes — Deferred Tax (PAS 12)" },
+            { "id": "FAR.liabilities.borrowing", "label": "Borrowing Costs (PAS 23)" }
+          ]
+        },
+        {
+          "id": "FAR.equity",
+          "label": "Equity",
+          "topics": [
+            { "id": "FAR.equity.share_capital", "label": "Share Capital & Dividends" },
+            { "id": "FAR.equity.retained_earnings", "label": "Retained Earnings & Appropriations" },
+            { "id": "FAR.equity.comprehensive_income", "label": "Other Comprehensive Income (OCI)" },
+            { "id": "FAR.equity.share_based", "label": "Share-Based Payment (PFRS 2)" }
+          ]
+        },
+        {
+          "id": "FAR.revenue",
+          "label": "Revenue & Financial Instruments",
+          "topics": [
+            { "id": "FAR.revenue.pfrs15", "label": "Revenue from Contracts with Customers (PFRS 15)" },
+            { "id": "FAR.revenue.fi_classification", "label": "Financial Instruments — Classification (PFRS 9)" },
+            { "id": "FAR.revenue.fi_impairment", "label": "Financial Instruments — Impairment (PFRS 9 ECL)" },
+            { "id": "FAR.revenue.fi_hedging", "label": "Hedge Accounting (PFRS 9)" },
+            { "id": "FAR.revenue.leases", "label": "Leases (PFRS 16)" }
+          ]
+        },
+        {
+          "id": "FAR.statements",
+          "label": "Financial Statements & Presentation",
+          "topics": [
+            { "id": "FAR.statements.presentation", "label": "Presentation of Financial Statements (PAS 1)" },
+            { "id": "FAR.statements.cashflow", "label": "Statement of Cash Flows (PAS 7)" },
+            { "id": "FAR.statements.interim", "label": "Interim Financial Reporting (PAS 34)" },
+            { "id": "FAR.statements.errors", "label": "Accounting Policies, Estimates & Errors (PAS 8)" },
+            { "id": "FAR.statements.events_after", "label": "Events After the Reporting Period (PAS 10)" },
+            { "id": "FAR.statements.related_party", "label": "Related Party Disclosures (PAS 24)" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "RFBT",
+      "code": "RFBT",
+      "label": "Regulatory Framework for Business Transactions",
+      "weight": 1,
+      "domains": [
+        {
+          "id": "RFBT.obligations",
+          "label": "Obligations & Contracts",
+          "topics": [
+            { "id": "RFBT.obligations.sources", "label": "Sources of Obligations" },
+            { "id": "RFBT.obligations.kinds", "label": "Kinds of Obligations" },
+            { "id": "RFBT.obligations.extinguishment", "label": "Extinguishment of Obligations" },
+            { "id": "RFBT.obligations.contracts_general", "label": "General Provisions on Contracts" },
+            { "id": "RFBT.obligations.void", "label": "Void and Voidable Contracts" }
+          ]
+        },
+        {
+          "id": "RFBT.sales",
+          "label": "Sales & Other Special Contracts",
+          "topics": [
+            { "id": "RFBT.sales.sale", "label": "Contract of Sale — Requisites & Effects" },
+            { "id": "RFBT.sales.warranties", "label": "Warranties and Conditions" },
+            { "id": "RFBT.sales.lease", "label": "Contract of Lease" },
+            { "id": "RFBT.sales.agency", "label": "Agency" },
+            { "id": "RFBT.sales.credit_transactions", "label": "Credit Transactions (Loan, Deposit, Pledge, Mortgage)" }
+          ]
+        },
+        {
+          "id": "RFBT.corporate",
+          "label": "Corporate Law",
+          "topics": [
+            { "id": "RFBT.corporate.formation", "label": "Formation and Organization of Corporations" },
+            { "id": "RFBT.corporate.powers", "label": "Corporate Powers and Authority" },
+            { "id": "RFBT.corporate.stockholders", "label": "Rights of Stockholders" },
+            { "id": "RFBT.corporate.dissolution", "label": "Dissolution and Liquidation" },
+            { "id": "RFBT.corporate.fria", "label": "Financial Rehabilitation & Insolvency Act (FRIA)" }
+          ]
+        },
+        {
+          "id": "RFBT.negotiable",
+          "label": "Negotiable Instruments & Banking",
+          "topics": [
+            { "id": "RFBT.negotiable.nil", "label": "Negotiable Instruments Law (NIL)" },
+            { "id": "RFBT.negotiable.banking", "label": "General Banking Law" },
+            { "id": "RFBT.negotiable.secrecy", "label": "Bank Secrecy Law" },
+            { "id": "RFBT.negotiable.bsp", "label": "BSP Regulations on Banking" }
+          ]
+        },
+        {
+          "id": "RFBT.labor",
+          "label": "Labor Law",
+          "topics": [
+            { "id": "RFBT.labor.employment", "label": "Employment — Conditions & Termination" },
+            { "id": "RFBT.labor.benefits", "label": "Mandatory Benefits (SSS, PhilHealth, Pag-IBIG)" },
+            { "id": "RFBT.labor.employer_liabilities", "label": "Employer Liabilities & Labor Standards" }
+          ]
+        },
+        {
+          "id": "RFBT.securities",
+          "label": "Securities Regulation & Other Laws",
+          "topics": [
+            { "id": "RFBT.securities.src", "label": "Securities Regulation Code (SRC)" },
+            { "id": "RFBT.securities.amla", "label": "Anti-Money Laundering Act (AMLA)" },
+            { "id": "RFBT.securities.data_privacy", "label": "Data Privacy Act" },
+            { "id": "RFBT.securities.e_commerce", "label": "E-Commerce Act" },
+            { "id": "RFBT.securities.consumer", "label": "Consumer Act & Price Act" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "TAX",
+      "code": "TAX",
+      "label": "Taxation",
+      "weight": 1,
+      "domains": [
+        {
+          "id": "TAX.general",
+          "label": "General Principles of Taxation",
+          "topics": [
+            { "id": "TAX.general.principles", "label": "Fundamental Principles & NIRC Overview" },
+            { "id": "TAX.general.sources", "label": "Sources of Tax Law & BIR Rulings" },
+            { "id": "TAX.general.remedies", "label": "Tax Remedies — Assessment, Collection, Refund" }
+          ]
+        },
+        {
+          "id": "TAX.income_individual",
+          "label": "Income Tax — Individual",
+          "topics": [
+            { "id": "TAX.income_individual.resident_citizen", "label": "Resident Citizen & Non-Resident Citizen" },
+            { "id": "TAX.income_individual.alien", "label": "Resident Alien & Non-Resident Alien" },
+            { "id": "TAX.income_individual.gross_income", "label": "Gross Income Inclusions & Exclusions" },
+            { "id": "TAX.income_individual.deductions", "label": "Allowable Deductions — Optional vs Itemized" },
+            { "id": "TAX.income_individual.passive", "label": "Passive Income & Final Tax" }
+          ]
+        },
+        {
+          "id": "TAX.income_corporate",
+          "label": "Income Tax — Corporate",
+          "topics": [
+            { "id": "TAX.income_corporate.domestic", "label": "Domestic Corporations — RCIT, MCIT, IAET" },
+            { "id": "TAX.income_corporate.foreign", "label": "Foreign Corporations — RFC & NRFC" },
+            { "id": "TAX.income_corporate.special", "label": "Special Corporations (PEZA, BOI, CREATE)" },
+            { "id": "TAX.income_corporate.create", "label": "CREATE Act — Incentives & CIT Rates" }
+          ]
+        },
+        {
+          "id": "TAX.vat",
+          "label": "Value Added Tax (VAT)",
+          "topics": [
+            { "id": "TAX.vat.taxable", "label": "Taxable Transactions & Exempt Sales" },
+            { "id": "TAX.vat.input_output", "label": "Input vs Output VAT & Refund" },
+            { "id": "TAX.vat.zero_rated", "label": "Zero-Rated & Effectively Zero-Rated" },
+            { "id": "TAX.vat.compliance", "label": "VAT Compliance & Filing" }
+          ]
+        },
+        {
+          "id": "TAX.other",
+          "label": "Other National & Local Taxes",
+          "topics": [
+            { "id": "TAX.other.percentage", "label": "Other Percentage Tax (OPT)" },
+            { "id": "TAX.other.excise", "label": "Excise Tax" },
+            { "id": "TAX.other.estate", "label": "Estate Tax & Donor's Tax" },
+            { "id": "TAX.other.documentary", "label": "Documentary Stamp Tax (DST)" },
+            { "id": "TAX.other.local", "label": "Local Government Taxes (LGU)" },
+            { "id": "TAX.other.tariff", "label": "Tariff & Customs Code" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "MAS",
+      "code": "MAS",
+      "label": "Management Advisory Services",
+      "weight": 1,
+      "domains": [
+        {
+          "id": "MAS.cost",
+          "label": "Cost Accounting & Cost Concepts",
+          "topics": [
+            { "id": "MAS.cost.classification", "label": "Cost Classification & Behavior" },
+            { "id": "MAS.cost.job_order", "label": "Job Order Costing" },
+            { "id": "MAS.cost.process", "label": "Process Costing" },
+            { "id": "MAS.cost.activity_based", "label": "Activity-Based Costing (ABC)" },
+            { "id": "MAS.cost.joint", "label": "Joint Products & By-Products" }
+          ]
+        },
+        {
+          "id": "MAS.cvp",
+          "label": "CVP Analysis & Short-Run Decisions",
+          "topics": [
+            { "id": "MAS.cvp.breakeven", "label": "Break-Even Analysis & Contribution Margin" },
+            { "id": "MAS.cvp.profit_planning", "label": "Profit Planning & Sensitivity Analysis" },
+            { "id": "MAS.cvp.relevant_costing", "label": "Relevant Costing & Special Decisions" },
+            { "id": "MAS.cvp.pricing", "label": "Pricing Decisions & Transfer Pricing" }
+          ]
+        },
+        {
+          "id": "MAS.budgeting",
+          "label": "Budgeting & Control",
+          "topics": [
+            { "id": "MAS.budgeting.master", "label": "Master Budget & Budget Preparation" },
+            { "id": "MAS.budgeting.flexible", "label": "Flexible Budgeting" },
+            { "id": "MAS.budgeting.standard", "label": "Standard Costing & Variance Analysis" },
+            { "id": "MAS.budgeting.responsibility", "label": "Responsibility Accounting & Segment Reporting" }
+          ]
+        },
+        {
+          "id": "MAS.performance",
+          "label": "Performance Measurement & Capital Budgeting",
+          "topics": [
+            { "id": "MAS.performance.roi", "label": "ROI, RI, EVA & Balanced Scorecard" },
+            { "id": "MAS.performance.capital", "label": "Capital Budgeting Techniques (NPV, IRR, Payback)" },
+            { "id": "MAS.performance.risk", "label": "Risk & Uncertainty in Decision Making" },
+            { "id": "MAS.performance.ltc", "label": "Long-Term Cost Analysis & Lifecycle Costing" }
+          ]
+        },
+        {
+          "id": "MAS.quantitative",
+          "label": "Quantitative Techniques",
+          "topics": [
+            { "id": "MAS.quantitative.linear_prog", "label": "Linear Programming" },
+            { "id": "MAS.quantitative.network", "label": "Network Analysis (CPM, PERT)" },
+            { "id": "MAS.quantitative.inventory", "label": "Inventory Management Models (EOQ, JIT)" },
+            { "id": "MAS.quantitative.queuing", "label": "Queuing & Simulation" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "AUD",
+      "code": "AUD",
+      "label": "Auditing and Assurance",
+      "weight": 1,
+      "domains": [
+        {
+          "id": "AUD.framework",
+          "label": "Conceptual Framework & Standards",
+          "topics": [
+            { "id": "AUD.framework.psa", "label": "Philippine Standards on Auditing (PSA) Overview" },
+            { "id": "AUD.framework.ethics", "label": "Code of Ethics for CPAs (Independence)" },
+            { "id": "AUD.framework.engagement", "label": "Types of Engagements & Acceptance" },
+            { "id": "AUD.framework.quality", "label": "Quality Control (PSQC 1 / ISQM)" }
+          ]
+        },
+        {
+          "id": "AUD.planning",
+          "label": "Audit Planning & Risk Assessment",
+          "topics": [
+            { "id": "AUD.planning.strategy", "label": "Overall Audit Strategy & Plan" },
+            { "id": "AUD.planning.materiality", "label": "Materiality & Tolerable Error" },
+            { "id": "AUD.planning.risk", "label": "Risk Assessment — Inherent, Control, Detection" },
+            { "id": "AUD.planning.fraud", "label": "Fraud Risk & Responsibilities (PSA 240)" }
+          ]
+        },
+        {
+          "id": "AUD.internal_control",
+          "label": "Internal Control & IT Audit",
+          "topics": [
+            { "id": "AUD.internal_control.coso", "label": "COSO Framework & Internal Control Components" },
+            { "id": "AUD.internal_control.cycle", "label": "Transaction Cycles — Revenue, Expenditure, Payroll" },
+            { "id": "AUD.internal_control.it_audit", "label": "IT Audit Concepts & General Controls" },
+            { "id": "AUD.internal_control.sampling", "label": "Audit Sampling — Statistical & Non-Statistical" }
+          ]
+        },
+        {
+          "id": "AUD.substantive",
+          "label": "Substantive Procedures & Evidence",
+          "topics": [
+            { "id": "AUD.substantive.assertions", "label": "Management Assertions & Audit Objectives" },
+            { "id": "AUD.substantive.cash_recv", "label": "Substantive Procedures — Cash & Receivables" },
+            { "id": "AUD.substantive.inventory", "label": "Substantive Procedures — Inventory" },
+            { "id": "AUD.substantive.ppe_liab", "label": "Substantive Procedures — PPE & Liabilities" },
+            { "id": "AUD.substantive.equity_income", "label": "Substantive Procedures — Equity & Income" }
+          ]
+        },
+        {
+          "id": "AUD.reporting",
+          "label": "Audit Reporting & Completion",
+          "topics": [
+            { "id": "AUD.reporting.report_types", "label": "Auditor's Report — Standard & Modified Opinions" },
+            { "id": "AUD.reporting.going_concern", "label": "Going Concern (PSA 570)" },
+            { "id": "AUD.reporting.subsequent_events", "label": "Subsequent Events (PSA 560)" },
+            { "id": "AUD.reporting.group_audit", "label": "Group Audits (PSA 600)" },
+            { "id": "AUD.reporting.other_services", "label": "Review, Compilation & Agreed-Upon Procedures" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "AFAR",
+      "code": "AFAR",
+      "label": "Advanced Financial Accounting and Reporting",
+      "weight": 1,
+      "domains": [
+        {
+          "id": "AFAR.partnership",
+          "label": "Partnership Accounting",
+          "topics": [
+            { "id": "AFAR.partnership.formation", "label": "Partnership Formation & Capital Accounts" },
+            { "id": "AFAR.partnership.operations", "label": "Partnership Operations & Profit Sharing" },
+            { "id": "AFAR.partnership.dissolution", "label": "Dissolution & Admission/Retirement of Partners" },
+            { "id": "AFAR.partnership.liquidation", "label": "Partnership Liquidation — Lump Sum & Installment" }
+          ]
+        },
+        {
+          "id": "AFAR.joint",
+          "label": "Joint Arrangements",
+          "topics": [
+            { "id": "AFAR.joint.joint_op", "label": "Joint Operations (PFRS 11)" },
+            { "id": "AFAR.joint.joint_venture", "label": "Joint Ventures — Equity Method" },
+            { "id": "AFAR.joint.construction", "label": "Long-Term Construction Contracts" }
+          ]
+        },
+        {
+          "id": "AFAR.business_combinations",
+          "label": "Business Combinations",
+          "topics": [
+            { "id": "AFAR.business_combinations.acquisition", "label": "Acquisition Method (PFRS 3)" },
+            { "id": "AFAR.business_combinations.goodwill", "label": "Goodwill & Bargain Purchase" },
+            { "id": "AFAR.business_combinations.contingent", "label": "Contingent Consideration & Step Acquisitions" }
+          ]
+        },
+        {
+          "id": "AFAR.consolidation",
+          "label": "Consolidated Financial Statements",
+          "topics": [
+            { "id": "AFAR.consolidation.basics", "label": "Consolidation Basics (PFRS 10)" },
+            { "id": "AFAR.consolidation.nci", "label": "Non-Controlling Interest (NCI)" },
+            { "id": "AFAR.consolidation.intercompany", "label": "Intercompany Eliminations" },
+            { "id": "AFAR.consolidation.subsidiary_changes", "label": "Changes in Ownership Interest" },
+            { "id": "AFAR.consolidation.associates", "label": "Associates & Equity Method (PAS 28)" }
+          ]
+        },
+        {
+          "id": "AFAR.foreign_currency",
+          "label": "Foreign Currency & Specialized Industries",
+          "topics": [
+            { "id": "AFAR.foreign_currency.transactions", "label": "Foreign Currency Transactions (PAS 21)" },
+            { "id": "AFAR.foreign_currency.translation", "label": "Translation of Foreign Operations" },
+            { "id": "AFAR.foreign_currency.government", "label": "Government Accounting (NGAS / IPSAS Intro)" },
+            { "id": "AFAR.foreign_currency.nfpo", "label": "Not-for-Profit Organizations Accounting" }
+          ]
+        }
+      ]
+    }
+  ]
+}
