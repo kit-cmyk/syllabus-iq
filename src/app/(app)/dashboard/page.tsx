@@ -11,6 +11,7 @@ import {
   TrendingUp,
   Lightbulb,
   Award,
+  Trophy,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser, getSyllabusOverview } from "@/lib/queries";
@@ -24,6 +25,7 @@ import {
   levelProgress,
   xpForLevel,
   badgeById,
+  BADGES,
   MAX_LEVEL,
 } from "@/lib/gamification";
 import { ProgressRing } from "@/components/ui/progress-ring";
@@ -409,26 +411,52 @@ export default async function DashboardPage() {
                 {level < MAX_LEVEL &&
                   ` · ${(xpForLevel(level + 1) - xp).toLocaleString()} to ${LEVEL_TITLES[level + 1]}`}
               </div>
-              {recentBadges.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {recentBadges.map((b) => (
-                    <span
-                      key={b.badge_id}
-                      title={badgeById.get(b.badge_id)?.description}
-                      className="inline-flex items-center gap-1 rounded-full bg-developing-bg px-2 py-0.5 text-[11px] font-semibold text-developing"
-                    >
-                      <Award size={11} /> {badgeById.get(b.badge_id)?.name ?? b.badge_id}
-                    </span>
-                  ))}
-                </div>
-              )}
             </div>
-            <Link
-              href="/achievements"
-              className="shrink-0 self-start text-[13px] font-semibold text-brand hover:underline"
-            >
-              Badges →
-            </Link>
+          </Card>
+
+          {/* Achievements mini-section */}
+          <Card>
+            <div className="flex items-center justify-between">
+              <h3 className="text-[17px] font-semibold text-ink-900">Achievements</h3>
+              <Link
+                href="/achievements"
+                className="text-[13px] font-semibold text-brand hover:underline"
+              >
+                View all →
+              </Link>
+            </div>
+            <div className="mt-3 flex items-center gap-3">
+              <span className="bg-developing-bg flex size-9 shrink-0 items-center justify-center rounded-full text-developing">
+                <Trophy size={18} strokeWidth={1.75} />
+              </span>
+              <div className="h-2 flex-1 rounded-full bg-line">
+                <div
+                  className="h-full rounded-full bg-developing"
+                  style={{ width: `${((badges?.length ?? 0) / BADGES.length) * 100}%` }}
+                />
+              </div>
+              <span className="text-[13px] font-semibold text-ink-600 tabular-nums">
+                {badges?.length ?? 0}/{BADGES.length}
+              </span>
+            </div>
+            {recentBadges.length > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {recentBadges.map((b) => (
+                  <span
+                    key={b.badge_id}
+                    title={badgeById.get(b.badge_id)?.description}
+                    className="inline-flex items-center gap-1 rounded-full bg-developing-bg px-2.5 py-1 text-[12px] font-semibold text-developing"
+                  >
+                    <Award size={12} /> {badgeById.get(b.badge_id)?.name ?? b.badge_id}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-3 text-[13px] text-ink-400">
+                None yet — your first completed session earns{" "}
+                <span className="font-medium text-ink-600">First Steps</span>.
+              </p>
+            )}
           </Card>
           {reviewDue > 0 && (
             <Card className="bg-tint/60">

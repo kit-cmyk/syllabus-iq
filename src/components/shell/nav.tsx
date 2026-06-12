@@ -8,15 +8,19 @@ import {
   PencilLine,
   Timer,
   RotateCcw,
+  Trophy,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
+// mobile: false keeps the bottom tab bar at five core destinations;
+// Achievements stays reachable on phones via the dashboard card.
 const items = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/subjects", label: "Subjects", icon: Library },
-  { href: "/practice", label: "Practice", icon: PencilLine },
-  { href: "/mocks", label: "Mock Exams", icon: Timer },
-  { href: "/review", label: "Review", icon: RotateCcw },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, mobile: true },
+  { href: "/subjects", label: "Subjects", icon: Library, mobile: true },
+  { href: "/practice", label: "Practice", icon: PencilLine, mobile: true },
+  { href: "/mocks", label: "Mock Exams", icon: Timer, mobile: true },
+  { href: "/review", label: "Review", icon: RotateCcw, mobile: true },
+  { href: "/achievements", label: "Achievements", icon: Trophy, mobile: false },
 ] as const;
 
 export function SidebarNav({ reviewDue = 0 }: { reviewDue?: number }) {
@@ -51,7 +55,7 @@ export function BottomTabs({ reviewDue = 0 }: { reviewDue?: number }) {
   const pathname = usePathname();
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t border-line bg-card md:hidden">
-      {items.map(({ href, label, icon: Icon }) => (
+      {items.filter((i) => i.mobile).map(({ href, label, icon: Icon }) => (
         <Link
           key={label}
           href={href}
