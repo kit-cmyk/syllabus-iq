@@ -1,9 +1,22 @@
 import Link from "next/link";
-import { Sparkles, Flame, Clock, RotateCcw, Settings, ArrowRight } from "lucide-react";
+import {
+  Sparkles,
+  Flame,
+  Clock,
+  RotateCcw,
+  Settings,
+  ArrowRight,
+  AlertTriangle,
+  TrendingDown,
+  TrendingUp,
+  Lightbulb,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser, getSyllabusOverview } from "@/lib/queries";
 import { manilaToday } from "@/lib/dates";
 import { readinessStatus, PASS_LINE, SUBJECT_FLOOR } from "@/lib/mastery";
+import { secondsPerItem } from "@/lib/mock";
+import { deriveInsights, payoffScore, type Insight } from "@/lib/insights";
 import { cn } from "@/lib/cn";
 import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
@@ -64,7 +77,7 @@ export default async function DashboardPage() {
     getSyllabusOverview(user.id),
     supabase
       .from("attempts")
-      .select("created_at")
+      .select("topic_id, is_correct, seconds_taken, created_at, quiz_sessions(mode, type)")
       .eq("user_id", user.id)
       .gte("created_at", sinceISO(60))
       .order("created_at", { ascending: false })
@@ -185,13 +198,45 @@ export default async function DashboardPage() {
         ? `${blocking.map((s) => s.code).join(", ")} ${blocking.length === 1 ? "is" : "are"} below the 65 floor.`
         : "Lift more subjects past the 75 line to reach passing.";
 
-  // ----- improvement sections -----
+  // ----- insights (PLAN-V2 Phase 6) -----
+  const insights = deriveInsights({
+    subjects: subjects.map((s) => ({
+      code: s.code,
+      readiness: s.readiness,
+      attempted: s.attempted,
+      secondsBudget: secondsPerItem(s.exam_minutes, s.exam_item_count),
+      topics: s.topics.map((t) => ({
+        id: t.id,
+        name: t.name,
+        mastery: t.mastery,
+        tos_weight: t.tos_weight,
+        distinctSeen: t.distinctSeen,
+        attempted: t.band !== "not-started",
+      })),
+    })),
+    attempts: (recentAttempts ?? []).map((a) => {
+      const session = a.quiz_sessions as unknown as { mode: string; type: string } | null;
+      return {
+        topic_id: a.topic_id,
+        is_correct: a.is_correct,
+        seconds_taken: a.seconds_taken,
+        timed: session?.mode === "timed" || session?.type === "mock",
+      };
+    }),
+    reviewDue,
+  });
+
+  // ----- improvement sections (payoff-ranked: deficit × exam weight) -----
   const allTopics = subjects.flatMap((s) =>
     s.topics.map((t) => ({ ...t, subjectCode: s.code }))
   );
   const weakest = allTopics
     .filter((t) => t.band !== "not-started")
-    .sort((a, b) => a.mastery - b.mastery || Number(b.stale) - Number(a.stale))
+    .sort(
+      (a, b) =>
+        payoffScore(b.mastery, b.tos_weight) - payoffScore(a.mastery, a.tos_weight) ||
+        Number(b.stale) - Number(a.stale)
+    )
     .slice(0, 5);
   const notStartedCount = allTopics.filter((t) => t.band === "not-started").length;
 
@@ -255,15 +300,25 @@ export default async function DashboardPage() {
         </p>
       </Card>
 
+      {/* Insight cards: what's wrong, why, and the one thing to do (PLAN-V2 §6) */}
+      {insights.length > 0 && (
+        <div className="mb-5 grid gap-3 lg:grid-cols-3">
+          {insights.map((insight) => (
+            <InsightCard key={insight.id} insight={insight} />
+          ))}
+        </div>
+      )}
+
       <div className="grid gap-5 lg:grid-cols-12">
         {/* Focus next */}
         <Card className="lg:col-span-7">
           <h3 className="text-[17px] font-semibold text-ink-900">Focus next</h3>
           <p className="text-[13px] text-ink-400">
-            Your weakest attempted topics — highest payoff per hour of review.
+            Ranked by exam payoff — how far below the pass line × how much of the
+            exam the topic carries.
           </p>
           <div className="mt-4 space-y-2">
-            {weakest.map((t) => (
+            {weakest.map((t, i) => (
               <div
                 key={t.id}
                 className="flex items-center gap-3 rounded-[var(--radius-control)] border border-line p-3"
@@ -271,7 +326,8 @@ export default async function DashboardPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] font-semibold uppercase text-ink-400">
-                      {t.subjectCode}
+                      {t.subjectCode} · {t.tos_weight}% of exam
+                      {i === 0 && " · biggest payoff"}
                     </span>
                     {t.stale && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-developing-bg px-2 py-0.5 text-[11px] font-medium text-developing">
@@ -365,6 +421,36 @@ export default async function DashboardPage() {
         </div>
       </div>
     </>
+  );
+}
+
+const INSIGHT_STYLE: Record<
+  Insight["severity"],
+  { icon: typeof AlertTriangle; bubble: string }
+> = {
+  3: { icon: AlertTriangle, bubble: "bg-learning-bg text-learning" },
+  2: { icon: TrendingDown, bubble: "bg-developing-bg text-developing" },
+  1: { icon: Lightbulb, bubble: "bg-tint text-brand" },
+  0: { icon: TrendingUp, bubble: "bg-mastered-bg text-mastered" },
+};
+
+function InsightCard({ insight }: { insight: Insight }) {
+  const { icon: Icon, bubble } = INSIGHT_STYLE[insight.severity];
+  return (
+    <Card className="flex flex-col gap-3 p-5">
+      <div className="flex items-start gap-3">
+        <span className={`flex size-9 shrink-0 items-center justify-center rounded-full ${bubble}`}>
+          <Icon size={18} strokeWidth={1.75} />
+        </span>
+        <p className="text-[14px] leading-relaxed text-ink-900">{insight.message}</p>
+      </div>
+      <Link
+        href={insight.cta.href}
+        className="mt-auto self-start text-[13px] font-semibold text-brand hover:underline"
+      >
+        {insight.cta.label} →
+      </Link>
+    </Card>
   );
 }
 
