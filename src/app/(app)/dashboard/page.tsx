@@ -328,20 +328,20 @@ export default async function DashboardPage() {
             ))}
           </div>
         </div>
+        {/* Insights: what's behind the number, and the one thing to do (PLAN-V2 §6) */}
+        {insights.length > 0 && (
+          <div className="mt-5 space-y-3 border-t border-line pt-4">
+            {insights.map((insight) => (
+              <InsightRow key={insight.id} insight={insight} />
+            ))}
+          </div>
+        )}
+
         <p className="mt-4 border-t border-line pt-3 text-[12px] text-ink-400">
           Pass needs a {PASS_LINE} average with no subject below {SUBJECT_FLOOR}. Untouched
           topics count as zero — readiness is earned, not assumed.
         </p>
       </Card>
-
-      {/* Insight cards: what's wrong, why, and the one thing to do (PLAN-V2 §6) */}
-      {insights.length > 0 && (
-        <div className="mb-5 grid gap-3 lg:grid-cols-3">
-          {insights.map((insight) => (
-            <InsightCard key={insight.id} insight={insight} />
-          ))}
-        </div>
-      )}
 
       <div className="grid gap-5 lg:grid-cols-12">
         {/* Focus next */}
@@ -538,23 +538,23 @@ const INSIGHT_STYLE: Record<
   0: { icon: TrendingUp, bubble: "bg-mastered-bg text-mastered" },
 };
 
-function InsightCard({ insight }: { insight: Insight }) {
+function InsightRow({ insight }: { insight: Insight }) {
   const { icon: Icon, bubble } = INSIGHT_STYLE[insight.severity];
   return (
-    <Card className="flex flex-col gap-3 p-5">
-      <div className="flex items-start gap-3">
-        <span className={`flex size-9 shrink-0 items-center justify-center rounded-full ${bubble}`}>
-          <Icon size={18} strokeWidth={1.75} />
+    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-4">
+      <div className="flex min-w-0 flex-1 items-start gap-3">
+        <span className={`flex size-8 shrink-0 items-center justify-center rounded-full ${bubble}`}>
+          <Icon size={16} strokeWidth={1.75} />
         </span>
         <p className="text-[14px] leading-relaxed text-ink-900">{insight.message}</p>
       </div>
       <Link
         href={insight.cta.href}
-        className="mt-auto self-start text-[13px] font-semibold text-brand hover:underline"
+        className="shrink-0 pl-11 text-[13px] font-semibold text-brand hover:underline sm:pl-0"
       >
         {insight.cta.label} →
       </Link>
-    </Card>
+    </div>
   );
 }
 
