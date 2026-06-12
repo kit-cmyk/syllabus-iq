@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
-import { Check, X, ChevronDown } from "lucide-react";
+import { Check, X, ChevronDown, Zap, Award } from "lucide-react";
+import { LEVEL_TITLES, badgeById } from "@/lib/gamification";
 import { createClient } from "@/lib/supabase/server";
 import { PASS_LINE, SUBJECT_FLOOR } from "@/lib/mastery";
 import { secondsPerItem } from "@/lib/mock";
@@ -15,10 +16,13 @@ const LETTERS = ["A", "B", "C", "D"];
 
 export default async function SummaryPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ xp?: string; lvl?: string; goal?: string; badges?: string }>;
 }) {
   const { id } = await params;
+  const reward = await searchParams;
   const supabase = await createClient();
 
   const { data: session } = await supabase
@@ -119,6 +123,33 @@ export default async function SummaryPage({
               : "Session results"
         }
       />
+
+      {reward.xp && (
+        <Card className="mb-5 flex flex-wrap items-center gap-x-6 gap-y-2 bg-tint/50 py-4">
+          <span className="inline-flex items-center gap-2 text-[15px] font-bold text-brand">
+            <Zap size={18} className="fill-brand" strokeWidth={1.75} />
+            +{reward.xp} XP
+          </span>
+          {reward.lvl && (
+            <span className="rounded-full bg-brand px-3 py-1 text-[13px] font-bold text-white">
+              Level up! {LEVEL_TITLES[Number(reward.lvl)] ?? `Level ${reward.lvl}`}
+            </span>
+          )}
+          {reward.goal && (
+            <span className="text-[13px] font-semibold text-mastered">
+              Daily goal hit (+50)
+            </span>
+          )}
+          {reward.badges?.split(",").map((b) => (
+            <span
+              key={b}
+              className="inline-flex items-center gap-1.5 rounded-full bg-developing-bg px-3 py-1 text-[13px] font-semibold text-developing"
+            >
+              <Award size={14} /> {badgeById.get(b)?.name ?? b}
+            </span>
+          ))}
+        </Card>
+      )}
 
       <Card className="mb-5 flex flex-wrap items-center gap-8">
         <MasteryRing score={score} label="score" size={110} />

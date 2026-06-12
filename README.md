@@ -13,6 +13,7 @@ Mastery tracking and self-testing for CPALE reviewers. See [PLAN.md](PLAN.md) fo
    - `supabase/migrations/0004_mock_flags.sql` (mock exams: flag-for-review state)
    - `supabase/migrations/0005_review.sql` (review queue: review sessions + refresher labels)
    - `supabase/migrations/0006_answer_lockdown.sql` (answer keys hidden from clients; grading via SECURITY DEFINER RPCs — **required**: answering questions breaks without it from this version on)
+   - `supabase/migrations/0007_gamification.sql` (XP/levels/badges; awarding happens in the DB so clients can't grant themselves XP)
    - `supabase/seed/0001_syllabus.sql` (6 subjects, 69 TOS topics)
    - `supabase/seed/0002_sample_questions_far.sql` (26 starter FAR questions)
    - `supabase/seed/0003_sample_materials_far.sql` (3 starter FAR readings)

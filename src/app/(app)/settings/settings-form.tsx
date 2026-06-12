@@ -21,12 +21,47 @@ function Notice({ kind, children }: { kind: "ok" | "err"; children: React.ReactN
   );
 }
 
-export function SettingsForm({ email, fullName }: { email: string; fullName: string }) {
+export function SettingsForm({
+  email,
+  fullName,
+  dailyGoal,
+}: {
+  email: string;
+  fullName: string;
+  dailyGoal: number;
+}) {
   const router = useRouter();
   const [nameMsg, setNameMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [pwMsg, setPwMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const [goalMsg, setGoalMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [savingName, setSavingName] = useState(false);
   const [savingPw, setSavingPw] = useState(false);
+  const [savingGoal, setSavingGoal] = useState(false);
+
+  async function saveGoal(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setGoalMsg(null);
+    const goal = Number(new FormData(e.currentTarget).get("daily_goal"));
+    if (!Number.isInteger(goal) || goal < 10 || goal > 100) {
+      setGoalMsg({ kind: "err", text: "Pick a goal between 10 and 100 questions." });
+      return;
+    }
+    setSavingGoal(true);
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from("user_stats")
+      .upsert({ user_id: user!.id, daily_goal: goal }, { onConflict: "user_id" });
+    setGoalMsg(
+      error
+        ? { kind: "err", text: "Could not save — run migration 0007 if this persists." }
+        : { kind: "ok", text: `Daily goal set to ${goal} questions.` }
+    );
+    setSavingGoal(false);
+    if (!error) router.refresh();
+  }
 
   async function saveName(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -82,6 +117,32 @@ export function SettingsForm({ email, fullName }: { email: string; fullName: str
           {nameMsg && <Notice kind={nameMsg.kind}>{nameMsg.text}</Notice>}
           <Button type="submit" disabled={savingName}>
             {savingName ? "Saving…" : "Save profile"}
+          </Button>
+        </form>
+      </Card>
+
+      <Card>
+        <h3 className="text-[17px] font-semibold text-ink-900">Daily goal</h3>
+        <p className="mt-1 text-[13px] text-ink-400">
+          Questions per day. Hitting it earns +50 XP, once a day.
+        </p>
+        <form onSubmit={saveGoal} className="mt-4 space-y-4">
+          <div>
+            <Label htmlFor="daily_goal">Questions per day (10–100)</Label>
+            <Input
+              id="daily_goal"
+              name="daily_goal"
+              type="number"
+              min={10}
+              max={100}
+              step={5}
+              defaultValue={dailyGoal}
+              required
+            />
+          </div>
+          {goalMsg && <Notice kind={goalMsg.kind}>{goalMsg.text}</Notice>}
+          <Button type="submit" disabled={savingGoal}>
+            {savingGoal ? "Saving…" : "Save goal"}
           </Button>
         </form>
       </Card>

@@ -10,6 +10,7 @@ import {
   TrendingDown,
   TrendingUp,
   Lightbulb,
+  Award,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser, getSyllabusOverview } from "@/lib/queries";
@@ -17,6 +18,15 @@ import { manilaToday } from "@/lib/dates";
 import { readinessStatus, PASS_LINE, SUBJECT_FLOOR } from "@/lib/mastery";
 import { secondsPerItem } from "@/lib/mock";
 import { deriveInsights, payoffScore, type Insight } from "@/lib/insights";
+import {
+  LEVEL_TITLES,
+  levelFromXp,
+  levelProgress,
+  xpForLevel,
+  badgeById,
+  MAX_LEVEL,
+} from "@/lib/gamification";
+import { ProgressRing } from "@/components/ui/progress-ring";
 import { cn } from "@/lib/cn";
 import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
@@ -73,6 +83,8 @@ export default async function DashboardPage() {
     { data: openSessions },
     { count: reviewDueCount },
     { data: mockRows },
+    { data: stats },
+    { data: badges },
   ] = await Promise.all([
     getSyllabusOverview(user.id),
     supabase
@@ -109,6 +121,16 @@ export default async function DashboardPage() {
       .eq("type", "mock")
       .not("completed_at", "is", null)
       .order("completed_at", { ascending: false }),
+    supabase
+      .from("user_stats")
+      .select("xp, level, daily_goal")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("user_badges")
+      .select("badge_id, earned_at")
+      .eq("user_id", user.id)
+      .order("earned_at", { ascending: false }),
   ]);
 
   const reviewDue = reviewDueCount ?? 0;
@@ -243,6 +265,16 @@ export default async function DashboardPage() {
   // ----- activity -----
   const { week, prevWeek, streak } = activityStats(recentAttempts ?? []);
 
+  // ----- gamification (display only; awarding lives in the DB) -----
+  const xp = stats?.xp ?? 0;
+  const level = stats?.level ?? levelFromXp(xp);
+  const dailyGoal = stats?.daily_goal ?? 20;
+  const today = manilaToday();
+  const answeredToday = (recentAttempts ?? []).filter(
+    (a) => manilaDay(a.created_at) === today
+  ).length;
+  const recentBadges = (badges ?? []).slice(0, 3);
+
   return (
     <>
       <PageHeader eyebrow={`Welcome back, ${firstName}`} title="Dashboard" action={settingsLink} />
@@ -362,8 +394,42 @@ export default async function DashboardPage() {
           )}
         </Card>
 
-        {/* Right rail: review due + trend + activity */}
+        {/* Right rail: level + review due + trend + activity */}
         <div className="space-y-5 lg:col-span-5">
+          <Card className="flex items-center gap-5">
+            <ProgressRing fraction={levelProgress(xp)} size={76}>
+              <span className="text-[22px] font-bold text-ink-900 tabular-nums">{level}</span>
+            </ProgressRing>
+            <div className="min-w-0 flex-1">
+              <div className="text-[15px] font-semibold text-ink-900">
+                {LEVEL_TITLES[level]}
+              </div>
+              <div className="text-[13px] text-ink-400 tabular-nums">
+                {xp.toLocaleString()} XP
+                {level < MAX_LEVEL &&
+                  ` · ${(xpForLevel(level + 1) - xp).toLocaleString()} to ${LEVEL_TITLES[level + 1]}`}
+              </div>
+              {recentBadges.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {recentBadges.map((b) => (
+                    <span
+                      key={b.badge_id}
+                      title={badgeById.get(b.badge_id)?.description}
+                      className="inline-flex items-center gap-1 rounded-full bg-developing-bg px-2 py-0.5 text-[11px] font-semibold text-developing"
+                    >
+                      <Award size={11} /> {badgeById.get(b.badge_id)?.name ?? b.badge_id}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <Link
+              href="/achievements"
+              className="shrink-0 self-start text-[13px] font-semibold text-brand hover:underline"
+            >
+              Badges →
+            </Link>
+          </Card>
           {reviewDue > 0 && (
             <Card className="bg-tint/60">
               <div className="flex items-center gap-4">
@@ -401,8 +467,14 @@ export default async function DashboardPage() {
           </Card>
           <Card>
             <h3 className="text-[17px] font-semibold text-ink-900">This week</h3>
-            <div className="mt-4 flex items-end gap-8">
-              <StatBlock value={week} label="Questions answered" />
+            <div className="mt-4 flex items-center gap-7">
+              <ProgressRing fraction={answeredToday / dailyGoal} size={64} stroke={6}>
+                <span className="text-[13px] font-bold text-ink-900 tabular-nums">
+                  {answeredToday}
+                </span>
+                <span className="text-[9px] text-ink-400">of {dailyGoal}</span>
+              </ProgressRing>
+              <StatBlock value={week} label="This week" />
               <StatBlock
                 value={prevWeek === 0 ? "—" : `${week >= prevWeek ? "+" : ""}${week - prevWeek}`}
                 label="vs last week"
@@ -417,6 +489,10 @@ export default async function DashboardPage() {
                 </span>
               </div>
             </div>
+            <p className="mt-3 text-[12px] text-ink-400">
+              Daily goal: {dailyGoal} questions (+50 XP) — change it in{" "}
+              <Link href="/settings" className="font-medium text-brand">Settings</Link>.
+            </p>
           </Card>
         </div>
       </div>

@@ -175,7 +175,7 @@ export async function submitAnswer(
       if (outcome.cleared) {
         await supabase
           .from("review_items")
-          .update({ cleared: true })
+          .update({ cleared: true, cleared_at: new Date().toISOString() })
           .eq("user_id", user.id)
           .eq("question_id", questionId);
         review = { cleared: true };
@@ -267,6 +267,20 @@ export async function completeSession(sessionId: string): Promise<never | { erro
     }
 
     await writeDailySnapshot(supabase, user.id);
+
+    // XP/badges — awarded by the database from earned state only (migration 0007);
+    // the result rides the redirect purely for display on the summary.
+    const { data: award } = await supabase.rpc("award_for_session", {
+      p_session_id: sessionId,
+    });
+    if (award && !award.error && award.xp_gained > 0) {
+      const params = new URLSearchParams({ xp: String(award.xp_gained) });
+      if (award.leveled_up) params.set("lvl", String(award.level));
+      if (award.goal_bonus) params.set("goal", "1");
+      const badges = (award.new_badges as string[]) ?? [];
+      if (badges.length) params.set("badges", badges.join(","));
+      redirect(`/quiz/${sessionId}/summary?${params.toString()}`);
+    }
   }
 
   redirect(`/quiz/${sessionId}/summary`);

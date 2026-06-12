@@ -38,7 +38,8 @@ export default async function proxy(request: NextRequest) {
     path.startsWith("/quiz") ||
     path.startsWith("/mocks") ||
     path.startsWith("/review") ||
-    path.startsWith("/settings");
+    path.startsWith("/settings") ||
+    path.startsWith("/achievements");
   const isAuthPage = path === "/login" || path === "/signup";
 
   if (!user && isProtected) {
