@@ -17,6 +17,16 @@ export const PACE_RATIO = 1.2; // recent avg seconds vs budget
 export const PACE_MIN_ATTEMPTS = 20; // timed attempts before pace is judged
 export const MAX_INSIGHTS = 3;
 
+// timing diagnostics (all attempts, generous thresholds — tutor time is noisy)
+export const TIMING_MIN_ATTEMPTS = 10; // per topic, with seconds recorded
+export const FAST_WRONG_RATIO = 0.5; // avg wrong-answer time under 50% of budget…
+export const FAST_WRONG_MISS_RATE = 0.4; // …while missing 40%+ = confident misconception
+export const SLOW_RIGHT_RATIO = 1.5; // avg correct-answer time over 150% of budget…
+export const SLOW_RIGHT_ACCURACY = 0.7; // …while accurate = fluency problem
+
+// pacing vs the exam date
+export const PACING_TOPICS_PER_WEEK = 3; // sustainable new-topics-per-week ceiling
+
 export type InsightTopic = {
   id: string;
   name: string;
@@ -46,6 +56,8 @@ export type InsightInput = {
   /** most-recent-first */
   attempts: InsightAttempt[];
   reviewDue: number;
+  /** whole weeks until the user's target exam date; null when unset/past */
+  examWeeksLeft?: number | null;
 };
 
 export type Insight = {
@@ -71,9 +83,24 @@ function driverTopic(subject: InsightSubject): InsightTopic | null {
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 
 export function deriveInsights(input: InsightInput): Insight[] {
-  const { subjects, attempts, reviewDue } = input;
+  const { subjects, attempts, reviewDue, examWeeksLeft = null } = input;
   const attempted = subjects.filter((s) => s.attempted);
   const candidates: (Insight & { impact: number; subjectCode?: string })[] = [];
+
+  // 0. Exam pacing — syllabus coverage vs the weeks that remain
+  if (examWeeksLeft !== null && examWeeksLeft > 0 && attempted.length > 0) {
+    const notStarted = subjects.flatMap((s) => s.topics).filter((t) => !t.attempted).length;
+    const perWeek = notStarted / examWeeksLeft;
+    if (perWeek > PACING_TOPICS_PER_WEEK) {
+      candidates.push({
+        id: "exam-pacing",
+        severity: 2,
+        impact: perWeek * 100,
+        message: `${notStarted} topics untouched with ${examWeeksLeft} week${examWeeksLeft === 1 ? "" : "s"} to the boards — that's ${Math.ceil(perWeek)} new topics a week just to see everything once.`,
+        cta: { label: "See coverage gaps", href: "/subjects" },
+      });
+    }
+  }
 
   // 1. Pass blocker — a subject under the 65 floor blocks the whole exam
   for (const s of attempted) {
@@ -212,6 +239,63 @@ export function deriveInsights(input: InsightInput): Insight[] {
         cta: {
           label: `Timed ${s.code} practice`,
           href: `/practice?subject=${s.code.toLowerCase()}`,
+        },
+      });
+    }
+  }
+
+  // 8 & 9. Timing diagnostics — fast-but-wrong (confident misconception) and
+  // slow-but-right (fluency gap), per topic, all attempts with seconds recorded
+  const timing = new Map<string, { wrongN: number; wrongSecs: number; rightN: number; rightSecs: number }>();
+  for (const a of attempts) {
+    if (a.seconds_taken == null) continue;
+    const t = timing.get(a.topic_id) ?? { wrongN: 0, wrongSecs: 0, rightN: 0, rightSecs: 0 };
+    if (a.is_correct) {
+      t.rightN++;
+      t.rightSecs += a.seconds_taken;
+    } else {
+      t.wrongN++;
+      t.wrongSecs += a.seconds_taken;
+    }
+    timing.set(a.topic_id, t);
+  }
+  for (const [topicId, t] of timing) {
+    const n = t.wrongN + t.rightN;
+    if (n < TIMING_MIN_ATTEMPTS) continue;
+    const found = topicIndex.get(topicId);
+    if (!found) continue;
+    const { topic, subject } = found;
+    const missRate = t.wrongN / n;
+    if (
+      t.wrongN > 0 &&
+      missRate >= FAST_WRONG_MISS_RATE &&
+      t.wrongSecs / t.wrongN < subject.secondsBudget * FAST_WRONG_RATIO
+    ) {
+      candidates.push({
+        id: `fast-wrong:${topicId}`,
+        severity: 2,
+        subjectCode: subject.code,
+        impact: payoffScore(topic.mastery, topic.tos_weight),
+        message: `You answer ${topic.name} quickly but miss ${Math.round(missRate * 100)}% — fast wrong answers usually mean a misconception, not a knowledge gap. Slow down and reread the explanations.`,
+        cta: {
+          label: `Review ${topic.name}`,
+          href: `/subjects/${subject.code.toLowerCase()}/${topicId}`,
+        },
+      });
+    } else if (
+      t.rightN > 0 &&
+      1 - missRate >= SLOW_RIGHT_ACCURACY &&
+      t.rightSecs / t.rightN > subject.secondsBudget * SLOW_RIGHT_RATIO
+    ) {
+      candidates.push({
+        id: `slow-right:${topicId}`,
+        severity: 1,
+        subjectCode: subject.code,
+        impact: topic.tos_weight,
+        message: `${topic.name} is accurate but slow — ${Math.round(t.rightSecs / t.rightN)}s per correct answer vs the ${subject.secondsBudget}s exam budget. Drill it timed to build speed.`,
+        cta: {
+          label: `Timed ${subject.code} practice`,
+          href: `/practice?subject=${subject.code.toLowerCase()}&topic=${topicId}`,
         },
       });
     }

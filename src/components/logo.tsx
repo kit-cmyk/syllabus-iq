@@ -11,7 +11,7 @@ export function Logo({
 }) {
   return (
     <Link href={href} className={cn("inline-flex items-center gap-2.5", className)}>
-      <span className="bg-brand-gradient flex size-10 items-center justify-center rounded-xl text-white shadow-card">
+      <span className="bg-brand-gradient flex size-10 items-center justify-center rounded-xl text-brand-deep shadow-card">
         <BookOpenCheck size={20} strokeWidth={1.75} />
       </span>
       <span className="text-[20px] font-bold text-ink-900">SyllabusIQ</span>

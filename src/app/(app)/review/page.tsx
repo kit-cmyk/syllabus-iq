@@ -78,14 +78,14 @@ export default async function ReviewPage() {
               weakest ? (
                 <Link
                   href={`/practice?subject=${weakest.subjectCode.toLowerCase()}&topic=${weakest.id}`}
-                  className="bg-brand-gradient inline-flex h-12 items-center justify-center gap-2 rounded-[var(--radius-control)] px-6 text-[15px] font-semibold text-white shadow-card"
+                  className="bg-brand-gradient inline-flex h-12 items-center justify-center gap-2 rounded-[var(--radius-control)] px-6 text-[15px] font-semibold text-brand-deep shadow-card"
                 >
                   <RotateCcw size={16} /> Practice {weakest.subjectCode}
                 </Link>
               ) : (
                 <Link
                   href="/practice"
-                  className="bg-brand-gradient inline-flex h-12 items-center justify-center gap-2 rounded-[var(--radius-control)] px-6 text-[15px] font-semibold text-white shadow-card"
+                  className="bg-brand-gradient inline-flex h-12 items-center justify-center gap-2 rounded-[var(--radius-control)] px-6 text-[15px] font-semibold text-brand-deep shadow-card"
                 >
                   Take a practice quiz
                 </Link>

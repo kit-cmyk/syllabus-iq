@@ -1,6 +1,6 @@
 import { cn } from "@/lib/cn";
 
-/** Generic brand-violet progress ring (MasteryRing is band-colored and 0–100 only). */
+/** Generic brand-green progress ring (MasteryRing is band-colored and 0–100 only). */
 export function ProgressRing({
   fraction,
   size = 72,

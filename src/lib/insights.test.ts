@@ -149,7 +149,8 @@ describe("topic trends", () => {
     const t = topic();
     const s = subject({ topics: [t] });
     const short = series(2, 8, t.id).slice(0, TREND_WINDOW * 2 - 1);
-    expect(deriveInsights(input({ subjects: [s], attempts: short }))).toEqual([]);
+    expect(byId(deriveInsights(input({ subjects: [s], attempts: short })), "declining")).toBeUndefined();
+    expect(byId(deriveInsights(input({ subjects: [s], attempts: short })), "improving")).toBeUndefined();
     const mild = series(7, 8, t.id); // 10-point dip < 20
     expect(byId(deriveInsights(input({ subjects: [s], attempts: mild })), "declining")).toBeUndefined();
   });
@@ -195,6 +196,74 @@ describe("pace risk", () => {
     expect(byId(deriveInsights(input({ subjects: [s], attempts: slowTutor })), "pace")).toBeUndefined();
     const few = timedAttempts(t.id, PACE_MIN_ATTEMPTS - 1, 300);
     expect(byId(deriveInsights(input({ subjects: [s], attempts: few })), "pace")).toBeUndefined();
+  });
+});
+
+describe("exam pacing", () => {
+  it("fires when untouched topics outpace the weeks left", () => {
+    const s1 = subject({ topics: [topic(), topic({ attempted: false, distinctSeen: 0 })] });
+    const untouched = Array.from({ length: 19 }, () =>
+      topic({ attempted: false, distinctSeen: 0 })
+    );
+    const s2 = subject({ attempted: false, topics: untouched });
+    // 20 untouched topics / 4 weeks = 5/week > 3 ceiling
+    const out = deriveInsights(input({ subjects: [s1, s2], examWeeksLeft: 4 }));
+    const hit = byId(out, "exam-pacing")!;
+    expect(hit.message).toContain("20 topics untouched with 4 weeks");
+    expect(hit.message).toContain("5 new topics a week");
+  });
+
+  it("stays quiet at a sustainable pace, with no date, or before any practice", () => {
+    const s = subject({ topics: [topic(), topic({ attempted: false, distinctSeen: 0 })] });
+    expect(byId(deriveInsights(input({ subjects: [s], examWeeksLeft: 10 })), "exam-pacing")).toBeUndefined();
+    expect(byId(deriveInsights(input({ subjects: [s] })), "exam-pacing")).toBeUndefined();
+    const fresh = subject({ attempted: false });
+    expect(byId(deriveInsights(input({ subjects: [fresh], examWeeksLeft: 1 })), "exam-pacing")).toBeUndefined();
+  });
+});
+
+describe("timing diagnostics", () => {
+  const att = (topicId: string, ok: boolean, secs: number) => ({
+    topic_id: topicId,
+    is_correct: ok,
+    seconds_taken: secs,
+    timed: false,
+  });
+
+  it("fast-but-wrong: quick misses at 40%+ miss rate = confident misconception", () => {
+    const t = topic({ name: "Leases" });
+    const s = subject({ code: "FAR", topics: [t], secondsBudget: 154 });
+    const attempts = [
+      ...Array.from({ length: 5 }, () => att(t.id, false, 40)), // fast and wrong
+      ...Array.from({ length: 5 }, () => att(t.id, true, 90)),
+    ];
+    const out = deriveInsights(input({ subjects: [s], attempts }));
+    const hit = byId(out, `fast-wrong:${t.id}`)!;
+    expect(hit.message).toContain("miss 50%");
+    expect(hit.cta.href).toMatch(/^\/subjects\/far\//); // review, not just re-drill
+  });
+
+  it("slow-but-right: accurate but over 150% of budget = fluency gap", () => {
+    const t = topic({ name: "Consolidated FS" });
+    const s = subject({ code: "AFAR", topics: [t], secondsBudget: 154 });
+    const attempts = [
+      ...Array.from({ length: 8 }, () => att(t.id, true, 260)),
+      ...Array.from({ length: 2 }, () => att(t.id, false, 100)),
+    ];
+    const out = deriveInsights(input({ subjects: [s], attempts }));
+    const hit = byId(out, `slow-right:${t.id}`)!;
+    expect(hit.message).toContain("260s per correct answer");
+  });
+
+  it("needs 10 timed-seconds attempts; missing seconds_taken rows don't count", () => {
+    const t = topic();
+    const s = subject({ topics: [t] });
+    const few = Array.from({ length: 9 }, () => att(t.id, false, 30));
+    expect(byId(deriveInsights(input({ subjects: [s], attempts: few })), "fast-wrong")).toBeUndefined();
+    const noSecs = Array.from({ length: 20 }, () => ({
+      topic_id: t.id, is_correct: false, seconds_taken: null, timed: false,
+    }));
+    expect(byId(deriveInsights(input({ subjects: [s], attempts: noSecs })), "fast-wrong")).toBeUndefined();
   });
 });
 

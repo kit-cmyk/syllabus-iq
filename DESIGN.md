@@ -1,6 +1,6 @@
 # SyllabusIQ — UI Design Plan
 
-Companion to [PLAN.md](PLAN.md). Defines the brand system and the layout of every screen in Phases 0–5, so every component is consistent and on-brand from the first commit. Visual direction: clean white canvas, violet→pink gradient as the single accent, soft rounded cards with gentle shadows, generous whitespace, big confident numerals.
+Companion to [PLAN.md](PLAN.md). Defines the brand system and the layout of every screen in Phases 0–5, so every component is consistent and on-brand from the first commit. Visual direction: clean white canvas, mint→ice green gradient as the single accent, soft rounded cards with gentle shadows, generous whitespace, big confident numerals.
 
 ---
 
@@ -11,9 +11,13 @@ All tokens live in `tailwind.config.ts` + `globals.css` once, in Phase 0. No com
 ### Color
 
 ```
---brand-violet:   #6D5BF6      /* primary; icons, links, active states */
---brand-pink:     #C44BD9      /* gradient end only — never used alone */
---brand-gradient: linear-gradient(95deg, #6D5BF6 0%, #C44BD9 100%)
+--brand (shamrock):    #28965A   /* primary; icons, links, active states */
+--brand-deep (hunter): #2A6041   /* text/icons ON gradient fills — never body text */
+--brand-mint:          #2CEAA3   /* tropical mint — gradient anchor, never used alone */
+--brand-ice:           #7CFEF0   /* neon ice — gradient end, never used alone */
+
+--brand-gradient (fills): linear-gradient(95deg, #2CEAA3 0%, #7CFEF0 100%)
+--brand-gradient (text on white): linear-gradient(95deg, #28965A 0%, #2CEAA3 100%)
 
 --ink-900: #0F172A    /* headlines */
 --ink-600: #475569    /* body text */
@@ -23,20 +27,24 @@ All tokens live in `tailwind.config.ts` + `globals.css` once, in Phase 0. No com
 --surface-card: #FFFFFF   /* all cards */
 --border:       #E8EAF0   /* hairlines, input borders */
 
---violet-50:  #F0EEFE     /* badge/pill backgrounds, hover tints, selected states */
+--mint-50:  #E6FCF2     /* badge/pill backgrounds, hover tints, selected states */
 ```
+
+The mints are too light to carry white text, so gradient fills (buttons, logo
+tile, icon bubbles) always pair with `--brand-deep` text — never white. Solid
+`--brand` surfaces keep white text.
 
 **Semantic colors** (mastery bands + feedback — the only colors besides brand):
 
 ```
---mastered:   #10B981  on #ECFDF5   /* green  — score ≥ 85 / correct answers */
---proficient: #6D5BF6  on #F0EEFE   /* violet — 75–84 (passing = brand color, on purpose) */
+--mastered:   #0D9488  on #F0FDFA   /* teal     — score ≥ 85 / correct answers */
+--proficient: #28965A  on #E6FCF2   /* shamrock — 75–84 (passing = brand color, on purpose) */
 --developing: #F59E0B  on #FFFBEB   /* amber  — 60–74 */
 --learning:   #F43F5E  on #FFF1F2   /* rose   — < 60 / wrong answers */
 --notstarted: #94A3B8  on #F1F5F9   /* slate  — untouched topics */
 ```
 
-Rules: the gradient appears only on (1) primary buttons, (2) one highlighted word per headline, (3) hero stat numerals, (4) the logo tile. Everything else uses flat `--brand-violet` or semantic colors. This restraint is what makes the reference look premium.
+Rules: the gradient appears only on (1) primary buttons, (2) one highlighted word per headline, (3) hero stat numerals, (4) the logo tile. Everything else uses flat `--brand` (shamrock) or semantic colors. This restraint is what makes the reference look premium.
 
 ### Typography
 
@@ -54,7 +62,7 @@ Rules: the gradient appears only on (1) primary buttons, (2) one highlighted wor
 
 ### Logo & app chrome
 
-Logo = 40px rounded-xl tile filled with the brand gradient, white "IQ" glyph or book-check icon, wordmark **SyllabusIQ** in 20px bold `ink-900` beside it.
+Logo = 40px rounded-xl tile filled with the brand gradient, `brand-deep` "IQ" glyph or book-check icon, wordmark **SyllabusIQ** in 20px bold `ink-900` beside it.
 
 ---
 
@@ -64,26 +72,26 @@ Built once in `components/ui/`, reused everywhere. No screen introduces a one-of
 
 | Component | Spec | Used in |
 |---|---|---|
-| **ButtonPrimary** | Brand gradient fill, white 15px semibold, 12px radius, h-48, optional leading icon; hover lifts + brightens 5%; loading spinner state | Every CTA |
+| **ButtonPrimary** | Brand gradient fill, `brand-deep` 15px semibold, 12px radius, h-48, optional leading icon; hover lifts + brightens 5%; loading spinner state | Every CTA |
 | **ButtonSecondary** | White fill, `border` hairline, `ink-900` text, same geometry; icon-leading variant (like "Watch Video") | Secondary actions everywhere |
-| **ButtonGhost** | Text-only `brand-violet`, used inline ("View all →") | Lists, cards |
+| **ButtonGhost** | Text-only `brand`, used inline ("View all →") | Lists, cards |
 | **Card** | White, radius-16, padding-24, soft shadow; `interactive` variant adds hover lift + cursor | The base of every surface |
 | **StatBlock** | Big gradient numeral + 13px gray label below (the "5,000+ Members" pattern) | Dashboard, summaries |
-| **Pill / Badge** | Full-radius, `violet-50` bg + violet text + optional icon (the "Rated #1" pattern); semantic variants use band colors | Mastery bands, statuses, "stale", streaks |
+| **Pill / Badge** | Full-radius, `mint-50` bg + brand-green text + optional icon (the "Rated #1" pattern); semantic variants use band colors | Mastery bands, statuses, "stale", streaks |
 | **IconBubble** | 44px circle, tinted bg + colored icon (wifi/check pattern from reference) | Feature cards, list rows, empty states |
 | **MasteryBar** | 8px full-radius track `border` color; fill = band color; 65/75 pass-line ticks as 2px `ink-400` notches | Topic rows, subject bars |
 | **MasteryRing** | Circular progress, band color, numeral centered | Topic detail, readiness header |
 | **BandChip** | Pill in band colors with label (Mastered / Proficient / Developing / Learning / Not started) | Everywhere a topic appears |
 | **TrendStrip** | Last-10-attempts row of 10px dots, green/rose | Topic detail, summaries |
-| **Input / Select / Stepper / SegmentedControl** | h-48, radius-12, hairline border, focus ring `brand-violet` 2px; segmented control = pill group with white active thumb | Auth, quiz setup |
-| **ProgressDots / QuestionPalette** | Numbered 36px rounded squares: white=blank, violet=answered, amber=flagged, ring=current | Quiz player, mock exam |
+| **Input / Select / Stepper / SegmentedControl** | h-48, radius-12, hairline border, focus ring `brand` 2px; segmented control = pill group with white active thumb | Auth, quiz setup |
+| **ProgressDots / QuestionPalette** | Numbered 36px rounded squares: white=blank, brand-green=answered, amber=flagged, ring=current | Quiz player, mock exam |
 | **TimerChip** | Pill with clock icon; `ink-600` normally, turns rose under 5 min with gentle pulse | Timed quiz, mock |
 | **Toast** | Bottom-center card, icon bubble + message | Saves, errors |
 | **EmptyState** | Centered IconBubble (large), 17px title, 15px gray line, one primary CTA | Every list/dashboard pre-data |
 | **Modal / Sheet** | Radius-16 card on `ink-900/40%` overlay; becomes bottom sheet on mobile | Confirm submit, quiz exit |
-| **Skeleton** | `violet-50`-tinted shimmer blocks matching card geometry | All data loads |
+| **Skeleton** | `mint-50`-tinted shimmer blocks matching card geometry | All data loads |
 
-Chart styling (Recharts, Phase 3): violet line/area with gradient fill fading to transparent, hairline gray grid, no axis lines, rounded tooltips matching Card.
+Chart styling (Recharts, Phase 3): brand-green line/area with gradient fill fading to transparent, hairline gray grid, no axis lines, rounded tooltips matching Card.
 
 ---
 
@@ -93,7 +101,7 @@ Chart styling (Recharts, Phase 3): violet line/area with gradient fill fading to
 
 **App** (authenticated): left sidebar 256px, white, hairline right border:
 - Logo top.
-- Nav items: Dashboard, Subjects, Practice, Mock Exams, Review — 12px-radius rows, 15px medium; active = `violet-50` bg + violet text + violet icon; Review carries a count badge (violet pill).
+- Nav items: Dashboard, Subjects, Practice, Mock Exams, Review — 12px-radius rows, 15px medium; active = `mint-50` bg + brand-green text + brand-green icon; Review carries a count badge (brand-green pill).
 - Bottom: user avatar chip + name + sign-out.
 - **Mobile (<768px):** sidebar becomes a 5-item bottom tab bar (same icons); page padding 16px; all cards full-width single column. Quiz player and mock palette are designed mobile-first (reviewees study on phones).
 
@@ -105,7 +113,7 @@ Page header pattern on every screen: 13px uppercase gray eyebrow (e.g., "FINANCI
 
 ### Phase 0 — Auth + syllabus browse
 
-**Sign in / Sign up:** split layout. Left 45%: white panel, logo, "Master every topic, **pass the boards**" (gradient on keyword), Google button (ButtonSecondary), divider, email/password inputs, gradient submit. Right 55%: `violet-50` panel with a floating Card collage echoing the reference's hero — a mock MasteryRing card + a mock "FAR · Proficient" topic row card, slightly overlapping. Sets the brand promise before first login. Mobile: form only.
+**Sign in / Sign up:** split layout. Left 45%: white panel, logo, "Master every topic, **pass the boards**" (gradient on keyword), Google button (ButtonSecondary), divider, email/password inputs, gradient submit. Right 55%: `mint-50` panel with a floating Card collage echoing the reference's hero — a mock MasteryRing card + a mock "FAR · Proficient" topic row card, slightly overlapping. Sets the brand promise before first login. Mobile: form only.
 
 **Subjects index:** 6 interactive Cards in a 3×2 grid (1-col mobile). Each: subject code as eyebrow, name H3, topic count caption — and from Phase 2, a MasteryBar + subject score numeral. Pre-data: bar hidden, "Not started" BandChip.
 
@@ -115,14 +123,14 @@ Page header pattern on every screen: 13px uppercase gray eyebrow (e.g., "FINANCI
 1. Subject — SegmentedControl or select.
 2. Topics — checkbox rows (from Phase 2 each row shows its BandChip, making "drill my weak spots" self-evident); "All topics" master toggle.
 3. Length — segmented 10 / 20 / 30.
-4. Mode — two selectable mini-cards with IconBubbles: **Tutor** (violet book icon, "feedback after each question") / **Timed** (amber clock, "feedback at the end"). Selected card: violet ring + `violet-50` bg.
+4. Mode — two selectable mini-cards with IconBubbles: **Tutor** (brand-green book icon, "feedback after each question") / **Timed** (amber clock, "feedback at the end"). Selected card: brand-green ring + `mint-50` bg.
 5. Gradient **Start practice** button, full-width.
 
 **Question player** (the most-used screen — maximal focus):
-- Slim top bar: progress "7 / 10" + thin violet progress line; TimerChip (timed mode); ghost exit (confirm modal).
+- Slim top bar: progress "7 / 10" + thin brand-green progress line; TimerChip (timed mode); ghost exit (confirm modal).
 - Centered column max-w-720: caption eyebrow = topic name; question stem 20px medium `ink-900`, line-height 1.6.
-- Choices: 4 full-width Cards, radius-12, hairline border, 16px padding, leading A/B/C/D chip (28px rounded square, `violet-50` + violet letter). Hover: violet border tint. Selected: violet ring.
-- Tutor-mode feedback (after lock-in): correct choice card flips to green bg/border + check IconBubble; a wrong pick flips rose + cross; **Explanation Card** slides in below — `violet-50` left border-4, lightbulb IconBubble, explanation body. Button becomes **Next →**.
+- Choices: 4 full-width Cards, radius-12, hairline border, 16px padding, leading A/B/C/D chip (28px rounded square, `mint-50` + brand-green letter). Hover: brand-green border tint. Selected: brand-green ring.
+- Tutor-mode feedback (after lock-in): correct choice card flips to green bg/border + check IconBubble; a wrong pick flips rose + cross; **Explanation Card** slides in below — `mint-50` left border-4, lightbulb IconBubble, explanation body. Button becomes **Next →**.
 - Keyboard: 1–4 select, Enter confirm. Buttons h-56 on mobile.
 
 **Session summary:**
@@ -147,8 +155,8 @@ Top-to-bottom on a 12-col grid (stacks on mobile):
 
 1. **Readiness header Card** (full-width, the hero): left — eyebrow "EXAM READINESS", giant gradient numeral (e.g., **71**), status BandChip (PASS green / CONDITIONAL amber / NOT YET slate) + one-line explanation ("TAX is below the 65 floor"). Right — 6 labeled vertical MasteryBars, one per subject, with 65/75 tick lines. This is the screen's "Work Better, Together" moment: one glance = where you stand.
 2. **Improvement sections** (left 7 cols): "Focus next" Card — 5 weakest-topic rows, each rose/amber BandChip + mini bar + **Practice now** ghost button. Beneath, collapsed "Not started (N)" list.
-3. **Right rail** (5 cols): trend Card (violet gradient area chart, 30 days) above an activity Card (StatBlocks: this week vs last, streak pill with flame icon 🔥 → IconBubble, not emoji).
-4. **Review due tile** (Phase 5): violet Card "12 due today" + button.
+3. **Right rail** (5 cols): trend Card (brand-green gradient area chart, 30 days) above an activity Card (StatBlocks: this week vs last, streak pill with flame icon 🔥 → IconBubble, not emoji).
+4. **Review due tile** (Phase 5): brand-green Card "12 due today" + button.
 
 **Empty state** (new user): readiness card replaced by EmptyState — large gradient IconBubble, "Let's find your baseline", sub "Take a 10-question quiz in any subject to light up your dashboard", gradient CTA. No zeros anywhere.
 
