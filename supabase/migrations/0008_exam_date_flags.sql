@@ -3,10 +3,13 @@
 -- 1. Target board-exam date (drives the countdown and pacing insights)
 alter table public.user_stats add column if not exists exam_date date;
 
--- widen the client-writable columns to include exam_date (still never xp/level)
+-- widen the client-writable columns to include exam_date (still never xp/level).
+-- user_id must be in the UPDATE grant too: PostgREST upserts write the conflict
+-- column into "on conflict do update set", so omitting it 42501s every upsert.
+-- RLS (with check auth.uid() = user_id) still pins user_id to the caller's own id.
 revoke insert, update on public.user_stats from authenticated;
 grant insert (user_id, daily_goal, exam_date) on public.user_stats to authenticated;
-grant update (daily_goal, exam_date)          on public.user_stats to authenticated;
+grant update (user_id, daily_goal, exam_date) on public.user_stats to authenticated;
 
 -- 2. Users flag bad questions; content QA reads this table (service role / dashboard)
 create table if not exists public.question_flags (
