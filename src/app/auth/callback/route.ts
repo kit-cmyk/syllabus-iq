@@ -13,6 +13,16 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // Seed the exam date captured at signup into user_stats (once; idempotent).
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const examDate = user?.user_metadata?.exam_date as string | null | undefined;
+      if (user && examDate) {
+        await supabase
+          .from("user_stats")
+          .upsert({ user_id: user.id, exam_date: examDate }, { onConflict: "user_id" });
+      }
       return NextResponse.redirect(`${origin}${target}`);
     }
   }

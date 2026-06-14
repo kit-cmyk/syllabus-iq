@@ -25,18 +25,46 @@ export function SettingsForm({
   email,
   fullName,
   dailyGoal,
+  examDate,
 }: {
   email: string;
   fullName: string;
   dailyGoal: number;
+  examDate: string;
 }) {
   const router = useRouter();
   const [nameMsg, setNameMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [pwMsg, setPwMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [goalMsg, setGoalMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const [examMsg, setExamMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [savingName, setSavingName] = useState(false);
   const [savingPw, setSavingPw] = useState(false);
   const [savingGoal, setSavingGoal] = useState(false);
+  const [savingExam, setSavingExam] = useState(false);
+
+  async function saveExamDate(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setExamMsg(null);
+    const value = String(new FormData(e.currentTarget).get("exam_date") || "");
+    setSavingExam(true);
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from("user_stats")
+      .upsert(
+        { user_id: user!.id, exam_date: value || null },
+        { onConflict: "user_id" }
+      );
+    setExamMsg(
+      error
+        ? { kind: "err", text: "Could not save — run migration 0008 if this persists." }
+        : { kind: "ok", text: value ? "Exam date saved." : "Exam date cleared." }
+    );
+    setSavingExam(false);
+    if (!error) router.refresh();
+  }
 
   async function saveGoal(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -143,6 +171,23 @@ export function SettingsForm({
           {goalMsg && <Notice kind={goalMsg.kind}>{goalMsg.text}</Notice>}
           <Button type="submit" disabled={savingGoal}>
             {savingGoal ? "Saving…" : "Save goal"}
+          </Button>
+        </form>
+      </Card>
+
+      <Card>
+        <h3 className="text-[17px] font-semibold text-ink-900">Target exam date</h3>
+        <p className="mt-1 text-[13px] text-ink-400">
+          Drives the dashboard countdown. Leave blank to hide it.
+        </p>
+        <form onSubmit={saveExamDate} className="mt-4 space-y-4">
+          <div>
+            <Label htmlFor="exam_date">Exam date</Label>
+            <Input id="exam_date" name="exam_date" type="date" defaultValue={examDate} />
+          </div>
+          {examMsg && <Notice kind={examMsg.kind}>{examMsg.text}</Notice>}
+          <Button type="submit" disabled={savingExam}>
+            {savingExam ? "Saving…" : "Save exam date"}
           </Button>
         </form>
       </Card>

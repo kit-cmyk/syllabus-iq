@@ -22,12 +22,15 @@ export default function SignupPage() {
     setLoading(true);
     const form = new FormData(e.currentTarget);
     const email = String(form.get("email"));
+    const examDate = String(form.get("exam_date") || "");
     const supabase = createClient();
     const { data, error } = await supabase.auth.signUp({
       email,
       password: String(form.get("password")),
       options: {
-        data: { full_name: String(form.get("name")) },
+        // exam_date rides along in user metadata; it's seeded into user_stats
+        // on first authenticated load (auth callback, or here when confirmation is off).
+        data: { full_name: String(form.get("name")), exam_date: examDate || null },
         emailRedirectTo: `${location.origin}/auth/callback`,
       },
     });
@@ -38,6 +41,11 @@ export default function SignupPage() {
     }
     // If email confirmation is off, a session exists and we can go straight in.
     if (data.session) {
+      if (examDate && data.user) {
+        await supabase
+          .from("user_stats")
+          .upsert({ user_id: data.user.id, exam_date: examDate }, { onConflict: "user_id" });
+      }
       router.push("/dashboard");
       router.refresh();
       return;
@@ -107,6 +115,13 @@ export default function SignupPage() {
             minLength={8}
             placeholder="At least 8 characters"
           />
+        </div>
+        <div>
+          <Label htmlFor="exam_date">Target exam date (optional)</Label>
+          <Input id="exam_date" name="exam_date" type="date" />
+          <p className="mt-1.5 text-[12px] text-ink-400">
+            We&apos;ll show a countdown and pace your review toward it. You can change it later.
+          </p>
         </div>
         {error && (
           <p className="rounded-[var(--radius-control)] bg-learning-bg px-4 py-3 text-[13px] font-medium text-learning">

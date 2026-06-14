@@ -12,10 +12,11 @@ import {
   Lightbulb,
   Award,
   Trophy,
+  CalendarDays,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser, getSyllabusOverview } from "@/lib/queries";
-import { manilaToday } from "@/lib/dates";
+import { manilaToday, daysUntilExam } from "@/lib/dates";
 import { readinessStatus, PASS_LINE, SUBJECT_FLOOR } from "@/lib/mastery";
 import { secondsPerItem } from "@/lib/mock";
 import { deriveInsights, payoffScore, type Insight } from "@/lib/insights";
@@ -125,7 +126,7 @@ export default async function DashboardPage() {
       .order("completed_at", { ascending: false }),
     supabase
       .from("user_stats")
-      .select("xp, level, daily_goal")
+      .select("xp, level, daily_goal, exam_date")
       .eq("user_id", user.id)
       .maybeSingle(),
     supabase
@@ -168,6 +169,13 @@ export default async function DashboardPage() {
   const hasAnyAttempt = (recentAttempts ?? []).length > 0 ||
     subjects.some((s) => s.attempted);
 
+  // exam date lives in user_stats; fall back to signup metadata until it's seeded
+  const examDate =
+    (stats?.exam_date as string | null | undefined) ??
+    (user.user_metadata?.exam_date as string | null | undefined) ??
+    null;
+  const examCountdown = <ExamCountdown examDate={examDate} />;
+
   const settingsLink = (
     <Link href="/settings" title="Settings" className="text-ink-400 hover:text-brand">
       <Settings size={20} strokeWidth={1.75} />
@@ -177,7 +185,7 @@ export default async function DashboardPage() {
   const resumeBanner = openInfo && (
     <Link href={openInfo.href}>
       <Card interactive className="mb-5 flex items-center gap-4 border border-brand/30 bg-tint/40">
-        <span className="bg-brand-gradient flex size-11 shrink-0 items-center justify-center rounded-full text-white">
+        <span className="bg-brand-gradient flex size-11 shrink-0 items-center justify-center rounded-full text-brand-deep">
           <ArrowRight size={20} strokeWidth={1.75} />
         </span>
         <div className="min-w-0 flex-1">
@@ -196,6 +204,7 @@ export default async function DashboardPage() {
       <>
         <PageHeader eyebrow={`Welcome, ${firstName}`} title="Dashboard" action={settingsLink} />
         {resumeBanner}
+        {examCountdown}
         <Card>
           <EmptyState
             icon={<Sparkles size={28} strokeWidth={1.75} />}
@@ -282,6 +291,7 @@ export default async function DashboardPage() {
       <PageHeader eyebrow={`Welcome back, ${firstName}`} title="Dashboard" action={settingsLink} />
 
       {resumeBanner}
+      {examCountdown}
 
       {/* Readiness header */}
       <Card className="mb-5">
@@ -528,6 +538,63 @@ export default async function DashboardPage() {
   );
 }
 
+/** Days-to-exam banner. Reads the live clock via daysUntilExam (Asia/Manila). */
+function ExamCountdown({ examDate }: { examDate: string | null }) {
+  if (!examDate) return null;
+  const days = daysUntilExam(examDate);
+  const pretty = new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "Asia/Manila",
+  }).format(new Date(examDate));
+
+  if (days < 0) {
+    return (
+      <Card className="mb-5 flex items-center gap-4">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-line text-ink-400">
+          <CalendarDays size={20} strokeWidth={1.75} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="text-[15px] font-semibold text-ink-900">Your exam date has passed</div>
+          <div className="text-[13px] text-ink-600">{pretty}</div>
+        </div>
+        <Link href="/settings" className="shrink-0 text-[13px] font-semibold text-brand hover:underline">
+          Set a new date →
+        </Link>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="mb-5 flex items-center gap-4 border border-brand/30 bg-tint/40">
+      <span className="bg-brand flex size-11 shrink-0 items-center justify-center rounded-full text-white">
+        <CalendarDays size={20} strokeWidth={1.75} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="text-[15px] font-semibold text-ink-900">
+          {days === 0 ? (
+            "Exam day — you've got this."
+          ) : (
+            <>
+              <span className="tabular-nums">{days}</span> day{days === 1 ? "" : "s"} until your exam
+            </>
+          )}
+        </div>
+        <div className="text-[13px] text-ink-600">{pretty}</div>
+      </div>
+      <Link
+        href="/settings"
+        title="Change exam date"
+        className="shrink-0 text-ink-400 hover:text-brand"
+      >
+        <Settings size={18} strokeWidth={1.75} />
+      </Link>
+    </Card>
+  );
+}
+
 const INSIGHT_STYLE: Record<
   Insight["severity"],
   { icon: typeof AlertTriangle; bubble: string }
@@ -558,7 +625,7 @@ function InsightRow({ insight }: { insight: Insight }) {
   );
 }
 
-/** Dependency-free violet sparkline for the 30-day readiness trend. */
+/** Dependency-free brand-green sparkline for the 30-day readiness trend. */
 function Sparkline({ points }: { points: number[] }) {
   const w = 320;
   const h = 80;
@@ -574,12 +641,12 @@ function Sparkline({ points }: { points: number[] }) {
     <svg viewBox={`0 0 ${w} ${h + 4}`} className="mt-3 w-full">
       <defs>
         <linearGradient id="spark" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#6d5bf6" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="#6d5bf6" stopOpacity="0" />
+          <stop offset="0%" stopColor="var(--color-brand)" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="var(--color-brand)" stopOpacity="0" />
         </linearGradient>
       </defs>
       <path d={`${path} L${w},${h + 4} L0,${h + 4} Z`} fill="url(#spark)" />
-      <path d={path} fill="none" stroke="#6d5bf6" strokeWidth="2.5" strokeLinecap="round" />
+      <path d={path} fill="none" stroke="var(--color-brand)" strokeWidth="2.5" strokeLinecap="round" />
     </svg>
   );
 }
